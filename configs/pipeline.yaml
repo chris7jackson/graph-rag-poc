@@ -1,0 +1,193 @@
+# Pipeline Configuration
+# This file contains all configurable parameters for the Graph RAG pipeline
+
+# Data Ingestion Settings
+ingestion:
+  wikipedia:
+    language: "en"
+    user_agent: "GraphRAGPoC/1.0 (https://github.com/yourusername/graph-rag-poc)"
+    batch_size: 10
+    max_articles: 20
+    cache_enabled: true
+    cache_dir: "./data/cache"
+  
+  preprocessing:
+    min_text_length: 100
+    remove_citations: true
+    remove_references: true
+    chunk_size: 1000
+    chunk_overlap: 100
+
+# Entity Extraction Settings
+extraction:
+  # GLiNER Configuration
+  gliner:
+    enabled: true
+    model_name: "urchade/gliner_multi_pii-v1"
+    device: "cpu"  # or "cuda" if GPU available
+    batch_size: 8
+    confidence_threshold: 0.5
+    max_length: 512  
+  # spaCy Configuration
+  spacy:
+    enabled: true
+    model_name: "en_core_web_sm"
+    components: ["ner", "parser", "lemmatizer"]
+    confidence_threshold: 0.7
+  
+  # Entity Types
+  entity_types:
+    default:
+      - PERSON
+      - ORGANIZATION
+      - LOCATION
+      - DATE
+      - EVENT
+    
+    custom:
+      - label: TECHNOLOGY
+        description: "Software, hardware, or technical concepts"
+        examples: ["Python", "Neural Network", "API", "Machine Learning"]
+      
+      - label: CONCEPT
+        description: "Abstract ideas or theories"
+        examples: ["Democracy", "Evolution", "Quantum Mechanics"]
+      
+      - label: PRODUCT
+        description: "Commercial products or services"
+        examples: ["iPhone", "Google Search", "Tesla Model 3"]
+
+# Graph Construction Settingsgraph:
+  backend: "networkx"  # Options: networkx, neo4j (future)
+  
+  # Node Settings
+  node:
+    max_nodes: 1000
+    min_confidence: 0.3
+    merge_threshold: 0.85  # Similarity threshold for merging
+  
+  # Edge Settings
+  edge:
+    min_weight: 0.1
+    max_edges_per_node: 50
+    relationship_types:
+      - RELATED_TO
+      - MENTIONS
+      - LOCATED_IN
+      - WORKS_FOR
+      - PART_OF
+  
+  # Co-occurrence Settings
+  cooccurrence:
+    window_size: "sentence"  # Options: sentence, paragraph, document
+    min_frequency: 2
+    weight_formula: "normalized"  # Options: count, normalized, tfidf
+  
+  # Export Settings
+  export:
+    formats: ["pickle", "graphml", "json"]
+    default_format: "pickle"
+# Validation Interface Settings
+validation:
+  streamlit:
+    port: 8501
+    theme: "dark"
+    max_file_size: 100  # MB
+  
+  visualization:
+    layout: "force"  # Options: force, circular, hierarchical
+    node_size_attr: "confidence"
+    edge_width_attr: "weight"
+    max_nodes_display: 100
+    physics_enabled: true
+  
+  operations:
+    allow_delete: true
+    allow_merge: true
+    allow_edit: true
+    batch_size: 10
+    auto_save: true
+    save_interval: 300  # seconds
+
+# Vector Index Settings
+indexing:
+  backend: "chromadb"  # Options: chromadb, faiss
+  
+  embedding:
+    model: "sentence-transformers/all-MiniLM-L6-v2"
+    dimension: 384
+    batch_size: 32  
+  chromadb:
+    persist_directory: "./data/indexes/chroma"
+    collection_name: "graph_entities"
+    distance_metric: "cosine"
+  
+  search:
+    top_k: 10
+    score_threshold: 0.7
+
+# LLM Query Settings
+llm:
+  provider: "ollama"
+  
+  ollama:
+    host: "http://localhost:11434"
+    model: "phi3:mini"  # Options: phi3:mini, mistral:7b, llama2:7b
+    timeout: 30  # seconds
+  
+  generation:
+    temperature: 0.3
+    max_tokens: 1024
+    top_p: 0.9
+    frequency_penalty: 0.0
+    presence_penalty: 0.0
+  
+  context:
+    max_entities: 20
+    max_relationships: 30
+    include_descriptions: true
+    include_sources: true  
+  prompts:
+    system: "You are a helpful assistant that answers questions based on a knowledge graph."
+    entity_template: "Answer about {entity}: {context}"
+    relationship_template: "Explain the relationship between {entity1} and {entity2}: {context}"
+    
+  query_types:
+    - entity_lookup
+    - relationship_query
+    - path_finding
+    - similarity_search
+    - analytical_query
+
+# Logging Settings
+logging:
+  level: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "json"  # Options: json, text
+  file: "./logs/pipeline.log"
+  max_size: "100MB"
+  backup_count: 5
+  
+  components:
+    ingestion: "INFO"
+    extraction: "INFO"
+    graph: "INFO"
+    validation: "INFO"
+    query: "INFO"
+
+# Performance Settings
+performance:
+  multiprocessing: false  # Enable for production  num_workers: 4
+  cache_size: "1GB"
+  batch_processing: true
+  
+  memory:
+    max_graph_size: "2GB"
+    gc_interval: 100  # operations
+    
+# Development Settings
+development:
+  debug_mode: false
+  profile: false
+  mock_llm: false  # Use mock responses for testing
+  sample_data: true  # Use sample Wikipedia articles
+  seed: 42  # For reproducibility
