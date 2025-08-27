@@ -14,6 +14,73 @@ from pyvis.network import Network
 import tempfile
 import streamlit.components.v1 as components
 
+def build_graph_context(graph, query):
+    """
+    Build context from the knowledge graph based on the user query.
+    Returns relevant entities and relationships as context for the LLM.
+    """
+    # Extract potential entities from the query
+    query_lower = query.lower()
+    relevant_entities = []
+    
+    # Find entities that match the query
+    for node, data in graph.nodes(data=True):
+        entity_text = data.get('text', '').lower()
+        entity_type = data.get('label', 'UNKNOWN')
+        
+        # Check if entity text appears in query or vice versa
+        if (entity_text in query_lower or 
+            any(word in entity_text for word in query_lower.split()) or
+            any(word in query_lower for word in entity_text.split())):
+            relevant_entities.append({
+                'text': data.get('text', ''),
+                'type': entity_type,
+                'confidence': data.get('confidence', 0),
+                'connections': graph.degree(node)
+            })
+    
+    # Sort by relevance (connections and confidence)
+    relevant_entities.sort(key=lambda x: (x['connections'], x['confidence']), reverse=True)
+    
+    # Get top entities and their relationships
+    context_parts = []
+    
+    # Add top relevant entities
+    if relevant_entities:
+        context_parts.append("**Relevant Entities:**")
+        for entity in relevant_entities[:10]:  # Top 10 entities
+            context_parts.append(f"- {entity['text']} ({entity['type']}) - {entity['connections']} connections")
+    
+    # Add some high-connectivity entities for general context
+    centrality = nx.degree_centrality(graph)
+    top_entities = sorted(centrality.items(), key=lambda x: x[1], reverse=True)[:5]
+    
+    context_parts.append("\n**Key Entities in Graph:**")
+    for node, centrality_score in top_entities:
+        data = graph.nodes[node]
+        context_parts.append(f"- {data.get('text', '')} ({data.get('label', 'UNKNOWN')}) - centrality: {centrality_score:.3f}")
+    
+    # Add some relationships
+    context_parts.append("\n**Key Relationships:**")
+    edge_count = 0
+    for source, target, edge_data in graph.edges(data=True):
+        if edge_count >= 10:  # Limit to 10 relationships
+            break
+        source_text = graph.nodes[source].get('text', '')
+        target_text = graph.nodes[target].get('text', '')
+        weight = edge_data.get('weight', 1)
+        if source_text and target_text:
+            context_parts.append(f"- {source_text} → {target_text} (weight: {weight:.2f})")
+            edge_count += 1
+    
+    # Add graph statistics
+    context_parts.append(f"\n**Graph Statistics:**")
+    context_parts.append(f"- Total entities: {len(graph.nodes)}")
+    context_parts.append(f"- Total relationships: {len(graph.edges)}")
+    context_parts.append(f"- Graph density: {nx.density(graph):.4f}")
+    
+    return "\n".join(context_parts)
+
 # Page config
 st.set_page_config(
     page_title="Graph RAG Validation",
@@ -56,8 +123,83 @@ with st.sidebar:
     else:
         graph = None
 
-# Main interface tabs
+# Chat interface (must be outside tabs)
 if graph:
+    st.header("💬 Chat & RAG Interface")
+    st.markdown("Ask questions about the knowledge graph using natural language.")
+    
+    # Chat interface
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    
+    # Display chat history
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    
+    # Chat input
+    if prompt := st.chat_input("Ask a question about the knowledge graph..."):
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        
+        # Display user message
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        
+        # Generate response
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                try:
+                    # Import ollama here to avoid import issues
+                    import ollama
+                    
+                    # Build context from graph
+                    context = build_graph_context(graph, prompt)
+                    
+                    # Create RAG prompt
+                    rag_prompt = f"""You are a helpful assistant that answers questions based on a knowledge graph about AI and machine learning topics.
+
+Context from the knowledge graph:
+{context}
+
+User question: {prompt}
+
+Please provide a comprehensive answer based on the context above. If the context doesn't contain enough information to answer the question, say so. Include relevant entities and relationships from the graph in your response.
+
+Answer:"""
+                    
+                    # Get response from Ollama
+                    response = ollama.chat(model='phi3:mini', messages=[
+                        {
+                            'role': 'user',
+                            'content': rag_prompt
+                        }
+                    ])
+                    
+                    answer = response['message']['content']
+                    
+                    # Add assistant response to chat history
+                    st.session_state.messages.append({"role": "assistant", "content": answer})
+                    
+                    st.markdown(answer)
+                    
+                    # Show context used
+                    with st.expander("🔍 Context Used"):
+                        st.markdown(f"**Graph Context:**\n{context}")
+                        
+                except Exception as e:
+                    error_msg = f"Sorry, I encountered an error: {str(e)}"
+                    st.error(error_msg)
+                    st.session_state.messages.append({"role": "assistant", "content": error_msg})
+    
+    # Clear chat button
+    if st.button("Clear Chat History"):
+        st.session_state.messages = []
+        st.rerun()
+    
+    st.markdown("---")
+    
+    # Main interface tabs
     tab1, tab2, tab3, tab4 = st.tabs(["📊 Overview", "🔍 Entities", "🔗 Relationships", "📈 Visualization"])
     
     with tab1:
