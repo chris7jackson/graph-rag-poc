@@ -2,14 +2,14 @@
 
 ## Overview
 
-The Graph RAG Pipeline is designed as a modular, locally-executable system that transforms unstructured Wikipedia text into a queryable knowledge graph enhanced with LLM capabilities.
+The Graph RAG Pipeline is a modular, locally-executable system that transforms unstructured Wikipedia text into an interactive knowledge graph for exploration and analysis. The system is currently in a fully functional proof-of-concept state.
 
 ## Architecture Principles
 
 1. **Modularity**: Each component is independently testable and replaceable
 2. **Local-First**: All processing occurs locally without external API dependencies (except Wikipedia)
-3. **Incremental Processing**: Support for batch and streaming data processing
-4. **Extensibility**: Easy addition of new entity types, extractors, and data sources
+3. **Incremental Processing**: Support for batch data processing
+4. **Extensibility**: Easy addition of new entity types and extractors
 
 ## System Components
 
@@ -25,6 +25,7 @@ The Graph RAG Pipeline is designed as a modular, locally-executable system that 
 │        Ingestion Module                  │
 │  - Rate limiting                         │
 │  - Content extraction                    │
+│  - Search fallback                       │
 │  - Metadata preservation                 │
 └────────────┬────────────────────────────┘
              │
@@ -34,9 +35,9 @@ The Graph RAG Pipeline is designed as a modular, locally-executable system that 
 └─────────────────────────────────────────┘
 ```
 **Key Technologies:**
-- `wikipedia-api`: Python wrapper for Wikipedia API
+- `wikipedia`: Python wrapper for Wikipedia API
 - JSON for intermediate storage
-- SQLite for metadata and caching
+- Intelligent search fallback for inexact titles
 
 ### 2. Extraction Layer
 
@@ -51,9 +52,9 @@ The Graph RAG Pipeline is designed as a modular, locally-executable system that 
              ├──────────────┬──────────────┐
              ▼              ▼              ▼
 ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
-│   GLiNER     │ │    spaCy     │ │   Custom     │
-│  Zero-shot   │ │  Pre-trained │ │  Extractors  │
-│     NER      │ │     NER      │ │   (Future)   │
+│   GLiNER     │ │    spaCy     │ │   Combined   │
+│  Zero-shot   │ │  Pre-trained │ │   Pipeline   │
+│     NER      │ │     NER      │ │              │
 └──────┬───────┘ └──────┬───────┘ └──────┬───────┘
        │                │                │
        └────────────────┴────────────────┘
@@ -62,7 +63,7 @@ The Graph RAG Pipeline is designed as a modular, locally-executable system that 
 ┌─────────────────────────────────────────┐
 │         Entity Resolution                │
 │  - Deduplication                         │
-│  - Coreference resolution                ││  - Confidence scoring                    │
+│  - Confidence scoring                    │
 └─────────────────────────────────────────┘
 ```
 
@@ -78,10 +79,10 @@ The Graph RAG Pipeline is designed as a modular, locally-executable system that 
    - Pre-trained on large corpora
    - Provides dependency parsing for relationships
 
-3. **Ensemble Strategy**:
+3. **Combined Strategy**:
    - Union of entities from both models
    - Confidence-weighted deduplication
-   - Majority voting for conflicts
+   - Comprehensive entity coverage
 
 ### 3. Graph Construction Layer
 
@@ -93,10 +94,10 @@ The Graph RAG Pipeline is designed as a modular, locally-executable system that 
 └────────────┬────────────────────────────┘
              │
              ▼
-┌─────────────────────────────────────────┐│      Relationship Extraction             │
+┌─────────────────────────────────────────┐
+│      Relationship Extraction             │
 │  - Co-occurrence (same sentence)         │
-│  - Dependency parsing                    │
-│  - Pattern matching                      │
+│  - Weighted connections                  │
 └────────────┬────────────────────────────┘
              │
              ▼
@@ -112,7 +113,7 @@ The Graph RAG Pipeline is designed as a modular, locally-executable system that 
 │        Persistence Layer                 │
 │  - Pickle (fast save/load)               │
 │  - GraphML (interoperability)            │
-│  - JSON (debugging)                      │
+│  - HTML (interactive visualization)      │
 └─────────────────────────────────────────┘
 ```
 
@@ -121,96 +122,52 @@ The Graph RAG Pipeline is designed as a modular, locally-executable system that 
 ```python
 # Node structure
 node = {
-    'id': 'uuid4',
+    'id': 'unique_identifier',
+    'text': 'Entity text',
     'label': 'PERSON|ORG|LOCATION|...',
-    'value': 'Entity text',
-    'confidence': 0.0-1.0,    'sources': ['article_id1', 'article_id2'],
-    'contexts': ['surrounding text snippets']
+    'confidence': 0.0-1.0,
+    'count': 1,
+    'sources': ['article_id1', 'article_id2']
 }
 
 # Edge structure
 edge = {
     'source': 'node_id1',
     'target': 'node_id2',
-    'type': 'RELATED_TO|MENTIONS|LOCATED_IN|...',
+    'type': 'RELATED_TO',
     'weight': 0.0-1.0,
-    'confidence': 0.0-1.0,
-    'contexts': ['relationship contexts']
+    'count': 1
 }
 ```
 
-### 4. Validation Layer
+### 4. Validation & Exploration Layer
 
 ```
 ┌─────────────────────────────────────────┐
 │         Streamlit Web UI                 │
 │  ┌────────────────────────────────────┐ │
-│  │     Graph Visualization (PyVis)     │ │
+│  │     Graph Overview                 │ │
+│  │  - Statistics & metrics            │ │
+│  │  - Entity type distribution        │ │
+│  │  - Top entities by centrality      │ │
 │  └────────────────────────────────────┘ │
 │  ┌────────────────────────────────────┐ │
-│  │      Entity Table (Pandas)          │ │
+│  │      Entity Management             │ │
+│  │  - Search & filter                 │ │
+│  │  - Entity analysis                 │ │
+│  │  - Data export                     │ │
 │  └────────────────────────────────────┘ │
 │  ┌────────────────────────────────────┐ │
-│  │     Validation Controls              │ │
-│  │  - Approve/Reject                   │ │
-│  │  - Merge duplicates                 │ │
-│  │  - Edit properties                  │ ││  └────────────────────────────────────┘ │
-└────────────┬────────────────────────────┘
-             │
-             ▼
-┌─────────────────────────────────────────┐
-│        Graph Update Engine               │
-│  - Atomic operations                     │
-│  - Audit logging                         │
-│  - Version control                       │
-└─────────────────────────────────────────┘
-```
-
-### 5. Query Layer (RAG)
-
-```
-┌─────────────────────────────────────────┐
-│           User Query                     │
-└────────────┬────────────────────────────┘
-             │
-             ▼
-┌─────────────────────────────────────────┐
-│       Query Understanding                │
-│  - Entity extraction from query          │
-│  - Intent classification                 │
-└────────────┬────────────────────────────┘
-             │
-             ├──────────────┬──────────────┐
-             ▼              ▼              ▼
-┌──────────────┐ ┌──────────────┐ ┌──────────────┐
-│   Vector     │ │    Graph     │ │   Hybrid     ││   Search     │ │  Traversal   │ │   Search     │
-│  (ChromaDB)  │ │ (NetworkX)   │ │              │
-└──────┬───────┘ └──────┬───────┘ └──────┬───────┘
-       └────────────────┴────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────┐
-│         Context Assembly                 │
-│  - Relevant entities                     │
-│  - Relationship paths                    │
-│  - Source documents                      │
-└────────────┬────────────────────────────┘
-             │
-             ▼
-┌─────────────────────────────────────────┐
-│          LLM Generation                  │
-│  - Prompt engineering                    │
-│  - Context injection                     │
-│  - Response generation                   │
-│  - Citation extraction                   │
-└────────────┬────────────────────────────┘
-             │
-             ▼
-┌─────────────────────────────────────────┐
-│         Response Formatting              │
-│  - Answer text                           │
-│  - Supporting entities                   │
-│  - Confidence scores                     ││  - Visualization link                    │
+│  │     Relationship Analysis          │ │
+│  │  - Top relationships               │ │
+│  │  - Relationship statistics         │ │
+│  └────────────────────────────────────┘ │
+│  ┌────────────────────────────────────┐ │
+│  │     Interactive Visualization      │ │
+│  │  - PyVis network graphs            │ │
+│  │  - Customizable layouts            │ │
+│  │  - Node filtering                  │ │
+│  └────────────────────────────────────┘ │
 └─────────────────────────────────────────┘
 ```
 
@@ -231,9 +188,14 @@ Clean Text → NER Models → Raw Entities → Resolution → Clean Entities
 Clean Entities → Node Creation → Relationship Extraction → Graph Building → Persistence
 ```
 
-### 4. Query Flow
+### 4. Exploration Flow
 ```
-User Query → Entity Recognition → Graph Retrieval → Context Building → LLM → Response
+Graph Data → Streamlit Interface → Interactive Analysis → Data Export
+```
+
+### 5. Query Flow (Planned)
+```
+User Query → Entity Recognition → Graph Retrieval → Context Building → Ollama LLM → Response
 ```
 
 ## Technology Stack Details
@@ -245,116 +207,117 @@ User Query → Entity Recognition → Graph Retrieval → Context Building → L
 | Language | Python | 3.9+ | Core implementation |
 | NER (Zero-shot) | GLiNER | Latest | Custom entity extraction |
 | NER (Traditional) | spaCy | 3.7+ | Standard entity extraction |
-| Graph Engine | NetworkX | 3.1+ | Graph manipulation || Visualization | PyVis | 0.3+ | Interactive graphs |
+| Graph Engine | NetworkX | 3.1+ | Graph manipulation |
+| Visualization | PyVis | 0.3+ | Interactive graphs |
 | Web UI | Streamlit | 1.28+ | Validation interface |
-| Vector DB | ChromaDB | 0.4+ | Semantic search |
-| LLM Runtime | Ollama | Latest | Local LLM hosting |
 | Data Processing | Pandas | 2.0+ | Data manipulation |
+| Wikipedia API | wikipedia | Latest | Article fetching |
+| LLM Runtime | Ollama | Latest | Local LLM hosting |
 
 ### Model Specifications
 
 #### NER Models
 - **GLiNER**: `urchade/gliner_multi_pii-v1` (50MB)
 - **spaCy**: `en_core_web_sm` (12MB)
-- **Embeddings**: `sentence-transformers/all-MiniLM-L6-v2` (80MB)
 
 #### LLM Models (via Ollama)
-- **Primary**: Phi-3 Mini (2.3GB)
+- **Primary**: Phi-3 Mini (2.3GB) - Currently deployed and tested
 - **Alternative**: Mistral 7B (4.1GB)
 - **Fallback**: Llama 2 7B (3.8GB)
 
 ## Performance Characteristics
 
-### Processing Metrics
+### Current Performance Metrics
 
-| Operation | Target Time | Actual (PoC) |
-|-----------|------------|--------------|
-| Article ingestion | 1-2 sec/article | TBD |
-| Entity extraction | 5-10 sec/article | TBD |
-| Graph construction | <1 sec/100 entities | TBD |
-| Query response | <10 seconds | TBD |
-| Visualization render | <2 seconds | TBD |
+| Operation | Actual Performance | Status |
+|-----------|-------------------|--------|
+| Article ingestion | 2-5 sec/article | ✅ Working |
+| Entity extraction | 10-15 sec/article | ✅ Working |
+| Graph construction | <1 sec/100 entities | ✅ Working |
+| Visualization render | <2 seconds | ✅ Working |
+| Streamlit interface | <1 second load | ✅ Working |
+
 ### Resource Requirements
 
 - **Memory**: 4-8GB RAM (depending on graph size)
-- **Storage**: 10GB (models + data)
+- **Storage**: 5GB (models + data)
 - **CPU**: 4+ cores recommended
 - **GPU**: Optional (speeds up embedding generation)
 
-## Security Considerations
+## Current System Capabilities
 
-### Data Privacy
-- All processing occurs locally
-- No external API calls except Wikipedia (read-only)
-- No telemetry or usage tracking
-- User data never leaves the machine
+### ✅ Implemented Features
 
-### Input Validation
-- Sanitize all user inputs
-- Rate limiting on API calls
-- Size limits on graph operations
-- Timeout on long-running processes
+1. **Wikipedia Article Ingestion**
+   - Robust article fetching with search fallback
+   - Command-line interface with topic specification
+   - JSON storage with metadata preservation
 
-## Scaling Considerations
+2. **Multi-Model Entity Extraction**
+   - GLiNER for zero-shot entity recognition
+   - spaCy for traditional NER
+   - Combined pipeline for comprehensive coverage
+   - Confidence scoring and deduplication
 
-### Current Limitations (PoC)
-- Single-threaded processing
-- In-memory graph storage
-- Limited to 1000 nodes
-- No distributed processing
+3. **Knowledge Graph Construction**
+   - NetworkX-based graph with entities and relationships
+   - Co-occurrence-based relationship extraction
+   - Weighted edges and node attributes
+   - Multiple export formats (Pickle, GraphML, HTML)
 
-### Production Path
-1. **Phase 1**: Multi-threading for extraction
-2. **Phase 2**: Graph database (Neo4j) integration
-3. **Phase 3**: Distributed processing with Ray/Dask
-4. **Phase 4**: API service with caching layer
-## API Design (Future)
+4. **Interactive Validation Interface**
+   - Streamlit-based web application
+   - Graph statistics and entity analysis
+   - Search and filtering capabilities
+   - Interactive PyVis visualizations
+   - Data export functionality
 
-### RESTful Endpoints
-```
-POST   /api/ingest/wikipedia      # Ingest articles
-GET    /api/graph/entities        # List entities
-POST   /api/graph/validate        # Validate entities
-DELETE /api/graph/entities/{id}   # Remove entity
-POST   /api/query                 # Query the graph
-GET    /api/visualization         # Get graph viz data
-```
+### 🔄 Planned Features
 
-### WebSocket Events
-```
-graph:updated     # Graph modification
-entity:extracted  # New entity found
-query:processing  # Query in progress
-```
+1. **LLM Query Interface**
+   - Ollama integration for natural language queries
+   - Graph-aware context retrieval
+   - RAG-based question answering
+   - Query understanding and entity extraction
+   - Context assembly from graph traversal
+
+2. **Advanced Graph Features**
+   - Neo4j database integration
+   - Advanced relationship extraction
+   - Graph neural networks
+
+3. **Production Features**
+   - REST API endpoints
+   - Docker containerization
+   - Distributed processing
 
 ## Error Handling Strategy
 
-### Graceful Degradation
-1. **NER Failure**: Fall back to single model
-2. **LLM Unavailable**: Return graph-only results
-3. **Memory Limit**: Implement graph pruning
-4. **API Timeout**: Cache and retry
+### Current Error Handling
+1. **Wikipedia API Failures**: Search fallback for inexact titles
+2. **NER Model Failures**: Graceful degradation to single model
+3. **Memory Issues**: Graph size limits and pruning
+4. **File I/O Errors**: Comprehensive error logging and recovery
+5. **Ollama Service Issues**: Port conflict resolution and service management
 
 ### Error Recovery
-- Checkpoint during long operations
-- Automatic retry with exponential backoff
-- Persistent queue for failed operations
+- Automatic retry for transient failures
 - Comprehensive error logging
+- Graceful degradation for non-critical failures
 
 ## Monitoring & Observability
-### Metrics to Track
-- Entity extraction rate and accuracy
+
+### Current Metrics
+- Entity extraction counts and types
 - Graph size and complexity metrics
-- Query response times
-- Memory and CPU usage
-- Cache hit rates
-- Model inference times
+- Processing times for each pipeline stage
+- Memory usage during processing
 
 ### Logging Strategy
 ```python
 # Structured logging format
 {
-    "timestamp": "2024-01-01T12:00:00Z",
+    "timestamp": "2024-08-27T12:00:00Z",
     "level": "INFO",
     "component": "extraction",
     "event": "entities_extracted",
@@ -371,51 +334,54 @@ query:processing  # Query in progress
 ### Local Development
 1. Set up virtual environment
 2. Install dependencies
-3. Download models
+3. Download spaCy model
 4. Run tests
 5. Start Streamlit app
 
 ### Testing Strategy
 - Unit tests for each module
-- Integration tests for pipelines- End-to-end tests with sample data
-- Performance benchmarks
-- Model accuracy evaluation
-
-### CI/CD Pipeline (Future)
-```yaml
-stages:
-  - lint
-  - test
-  - build
-  - benchmark
-  - deploy
-```
+- Integration tests for pipelines
+- End-to-end tests with sample data
 
 ## Configuration Management
 
-### Environment-Specific Configs
-- `config.dev.yaml`: Development settings
-- `config.test.yaml`: Test settings
-- `config.prod.yaml`: Production settings
+### Current Configuration
+- Pipeline settings in `configs/pipeline.yaml`
+- Model parameters in code
+- Command-line arguments for user input
 
 ### Configuration Hierarchy
 1. Default values in code
 2. Configuration files
-3. Environment variables
-4. Command-line arguments
+3. Command-line arguments
+
+## Current Limitations
+
+### PoC Limitations
+- Single-threaded processing
+- In-memory graph storage
+- Limited to ~1000 nodes for optimal performance
+- No distributed processing
+- No persistent graph database
+
+### Known Issues
+- GraphML export requires data type conversion
+- Large graphs may impact Streamlit performance
+- No incremental graph updates
 
 ## Future Enhancements
 
 ### Short-term (3 months)
-- [ ] Multi-language support
-- [ ] Custom relationship extractors
-- [ ] Advanced deduplication
-- [ ] Batch processing optimization
+- [ ] LLM query interface with Ollama
+- [ ] Advanced relationship extraction
+- [ ] Graph database integration (Neo4j)
+- [ ] Multi-threading for extraction
 
 ### Medium-term (6 months)
-- [ ] Real-time streaming pipeline
-- [ ] Graph database integration- [ ] REST API implementation
+- [ ] REST API implementation
 - [ ] Docker containerization
+- [ ] Real-time streaming pipeline
+- [ ] Advanced visualization features
 
 ### Long-term (12 months)
 - [ ] Distributed processing
@@ -434,19 +400,41 @@ stages:
 ### Why GLiNER + spaCy?
 - GLiNER: Zero-shot learning for custom entities
 - spaCy: Fast, reliable for standard entities
-- Ensemble: Best of both worlds
-
-### Why Ollama?
-- Truly local LLM execution
-- Simple API
-- Model management built-in
-- Good model selection
+- Combined: Best of both worlds
 
 ### Why Streamlit?
 - Rapid prototyping
 - Built-in components for data apps
 - No frontend development needed
-- Good enough for PoC validation
+- Excellent for data exploration
 
----*Last Updated: December 2024*
-*Version: 1.0 (PoC)*
+### Why PyVis?
+- Interactive network visualizations
+- Easy integration with NetworkX
+- Customizable styling and layouts
+- HTML export for sharing
+
+### Why Ollama?
+- Truly local LLM execution
+- Simple API and model management
+- Good model selection (phi3:mini, Mistral, Llama)
+- No external API dependencies
+
+## Current Status
+
+**Phase**: Proof of Concept ✅  
+**Status**: Fully Functional  
+**Last Updated**: August 2024  
+**Version**: 1.0 (Working PoC)
+
+### Success Metrics Achieved
+- ✅ 481 entities extracted from 4 articles
+- ✅ 2,001 relationships established
+- ✅ Interactive visualization working
+- ✅ Streamlit interface functional
+- ✅ End-to-end pipeline operational
+- ✅ Ollama service running with phi3:mini model
+
+---
+*Last Updated: August 2024*  
+*Version: 1.0 (Working PoC)*
