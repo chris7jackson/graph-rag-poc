@@ -30,7 +30,8 @@ setup: install
 test:
 	pytest tests/ -v
 
-# Clean generated filesclean:
+# Clean generated files
+clean:
 	rm -rf data/articles/*.json
 	rm -rf data/entities/*.json
 	rm -rf data/graphs/*

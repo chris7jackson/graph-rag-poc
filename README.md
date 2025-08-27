@@ -52,6 +52,36 @@ ollama pull phi3:mini
 
 ### Basic Usage
 
+#### Option 1: Using Makefile (Recommended)
+```bash
+# Complete setup
+make setup
+
+# Run the complete pipeline
+make run-pipeline
+
+# Or run individual steps
+make ingest
+make extract
+make build
+
+# Launch validation interface
+make validate
+
+# Clean up generated files
+make clean
+```
+
+**Available Commands:**
+- `make setup` - Complete setup (install + models)
+- `make run-pipeline` - Run complete pipeline
+- `make ingest` - Ingest Wikipedia articles
+- `make extract` - Extract entities
+- `make build` - Build knowledge graph
+- `make validate` - Launch validation interface
+- `make clean` - Clean up generated files
+
+#### Option 2: Direct Commands
 ```bash
 # 1. Ingest Wikipedia articles
 python -m src.ingestion.wikipedia --topics "Artificial Intelligence,Machine Learning" --max-articles 10
@@ -173,22 +203,30 @@ pytest --cov=src --cov-report=html
 
 ## 📈 Usage Examples
 
-### 1. Fetch Articles on AI Topics
+### 1. Quick Start with Makefile
+```bash
+# Complete setup and run
+make setup
+make run-pipeline
+make validate
+```
+
+### 2. Fetch Articles on AI Topics
 ```bash
 python -m src.ingestion.wikipedia --topics "Deep Learning,Computer Vision,Natural Language Processing" --max-articles 5
 ```
 
-### 2. Extract Entities and Build Graph
+### 3. Extract Entities and Build Graph
 ```bash
 python -m src.extraction.pipeline --input data/articles --output data/graphs
 ```
 
-### 3. Explore the Graph Interactively
+### 4. Explore the Graph Interactively
 ```bash
 streamlit run src/validation/app.py
 ```
 
-### 4. Run the Complete Demo
+### 5. Run the Complete Demo
 ```bash
 jupyter notebook notebooks/demo.ipynb
 ```
@@ -209,6 +247,8 @@ The Streamlit validation interface provides:
 
 1. **"No module named 'spacy'"**
    ```bash
+   make setup
+   # or manually:
    pip install -r requirements.txt
    python -m spacy download en_core_web_sm
    ```
@@ -224,6 +264,11 @@ The Streamlit validation interface provides:
    - Try different topic names
    - Check internet connection
    - Verify Wikipedia API access
+
+4. **"make: command not found" (Windows)**
+   - Install Make for Windows via Chocolatey: `choco install make`
+   - Or use the direct commands instead of Makefile
+   - Or use WSL (Windows Subsystem for Linux)
 
 ## 🤝 Contributing
 
