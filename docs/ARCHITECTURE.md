@@ -210,6 +210,7 @@ User Query → Entity Recognition → Graph Retrieval → Context Building → O
 | Graph Engine | NetworkX | 3.1+ | Graph manipulation |
 | Visualization | PyVis | 0.3+ | Interactive graphs |
 | Web UI | Streamlit | 1.28+ | Validation interface |
+| File Monitoring | Watchdog | 6.0+ | Streamlit performance optimization |
 | Data Processing | Pandas | 2.0+ | Data manipulation |
 | Wikipedia API | wikipedia | Latest | Article fetching |
 | LLM Runtime | Ollama | Latest | Local LLM hosting |
@@ -236,6 +237,7 @@ User Query → Entity Recognition → Graph Retrieval → Context Building → O
 | Graph construction | <1 sec/100 entities | ✅ Working |
 | Visualization render | <2 seconds | ✅ Working |
 | Streamlit interface | <1 second load | ✅ Working |
+| File monitoring | Real-time updates | ✅ Working |
 
 ### Resource Requirements
 
@@ -407,6 +409,7 @@ User Query → Entity Recognition → Graph Retrieval → Context Building → O
 - Built-in components for data apps
 - No frontend development needed
 - Excellent for data exploration
+- Watchdog integration for performance optimization
 
 ### Why PyVis?
 - Interactive network visualizations

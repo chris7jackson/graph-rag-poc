@@ -83,7 +83,7 @@ def build_graph_context(graph, query):
 
 # Page config
 st.set_page_config(
-    page_title="Graph RAG Validation",
+    page_title="Graph RAG Validation (Watchdog Enabled)",
     page_icon="🔍",
     layout="wide"
 )
