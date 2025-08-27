@@ -1,0 +1,283 @@
+{
+  "doc_id": "Natural language",
+  "entities": [
+    {
+      "text": "Standard French",
+      "label": "PERSON",
+      "start": 548,
+      "end": 563,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "Simplified Technical English",
+      "label": "ORG",
+      "start": 1589,
+      "end": 1617,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "Esperanto",
+      "label": "ORG",
+      "start": 1801,
+      "end": 1810,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "Polish",
+      "label": "NORP",
+      "start": 2093,
+      "end": 2099,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "L. L. Zamenhof",
+      "label": "PERSON",
+      "start": 2116,
+      "end": 2130,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "the late 19th century",
+      "label": "DATE",
+      "start": 2134,
+      "end": 2155,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "two",
+      "label": "CARDINAL",
+      "start": 2244,
+      "end": 2247,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "Haitian",
+      "label": "NORP",
+      "start": 2447,
+      "end": 2454,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "over 10 million",
+      "label": "CARDINAL",
+      "start": 2526,
+      "end": 2541,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "the Republic of Haiti",
+      "label": "GPE",
+      "start": 2603,
+      "end": 2624,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "1996",
+      "label": "DATE",
+      "start": 2632,
+      "end": 2636,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "350",
+      "label": "CARDINAL",
+      "start": 2649,
+      "end": 2652,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "one",
+      "label": "CARDINAL",
+      "start": 2676,
+      "end": 2679,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "first",
+      "label": "ORDINAL",
+      "start": 2869,
+      "end": 2874,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "Origin of language",
+      "label": "WORK_OF_ART",
+      "start": 2902,
+      "end": 2920,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "Formal",
+      "label": "ORG",
+      "start": 2973,
+      "end": 2979,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "Notes",
+      "label": "PRODUCT",
+      "start": 3104,
+      "end": 3109,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    }
+  ],
+  "relationships": [
+    [
+      "process",
+      "of",
+      "by"
+    ],
+    [
+      "forms",
+      "as",
+      "in"
+    ],
+    [
+      "Categorization",
+      "as",
+      "includes"
+    ],
+    [
+      "type",
+      "in",
+      "as"
+    ],
+    [
+      "comparison",
+      "with",
+      "in"
+    ],
+    [
+      "academy",
+      "as",
+      "with"
+    ],
+    [
+      "language",
+      "in",
+      "as"
+    ],
+    [
+      "field",
+      "of",
+      "in"
+    ],
+    [
+      "nature",
+      "as",
+      "in"
+    ],
+    [
+      "usage",
+      "of",
+      "decreasing"
+    ],
+    [
+      "purposes",
+      "for",
+      "are"
+    ],
+    [
+      "understanding",
+      "by",
+      "aid"
+    ],
+    [
+      "example",
+      "of",
+      "is"
+    ],
+    [
+      "exception",
+      "of",
+      "with"
+    ],
+    [
+      "speakers",
+      "of",
+      "of"
+    ],
+    [
+      "fluctuations",
+      "in",
+      "through"
+    ],
+    [
+      "synthesis",
+      "of",
+      "through"
+    ],
+    [
+      "synthesis",
+      "over",
+      "through"
+    ],
+    [
+      "synthesis",
+      "through",
+      "through"
+    ],
+    [
+      "period",
+      "of",
+      "over"
+    ],
+    [
+      "development",
+      "of",
+      "through"
+    ],
+    [
+      "creole",
+      "as",
+      "has"
+    ],
+    [
+      "languages",
+      "of",
+      "of"
+    ],
+    [
+      "Republic",
+      "of",
+      "of"
+    ],
+    [
+      "speakers",
+      "of",
+      "with"
+    ],
+    [
+      "Origin",
+      "of",
+      "acquired"
+    ],
+    [
+      "study",
+      "of",
+      "See"
+    ]
+  ],
+  "stats": {
+    "total_entities": 17,
+    "unique_entities": 17,
+    "total_relationships": 27
+  }
+}

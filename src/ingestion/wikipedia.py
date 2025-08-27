@@ -7,6 +7,8 @@ This module handles fetching and preprocessing Wikipedia articles.
 import json
 import logging
 import os
+import sys
+import argparse
 from pathlib import Path
 from typing import List, Dict, Optional
 import time
@@ -31,7 +33,8 @@ class WikipediaIngester:
         """
         self.config = config or {}
         self.language = self.config.get('language', 'en')
-        self.user_agent = self.config.get('user_agent', 'GraphRAGPoC/1.0')        self.cache_dir = Path(self.config.get('cache_dir', './data/cache'))
+        self.user_agent = self.config.get('user_agent', 'GraphRAGPoC/1.0')
+        self.cache_dir = Path(self.config.get('cache_dir', './data/cache'))
         self.output_dir = Path('./data/articles')
         
         # Create directories if they don't exist
@@ -53,14 +56,43 @@ class WikipediaIngester:
         """
         try:
             console.print(f"[blue]Fetching article: {title}[/blue]")
-            page = wikipedia.page(title)
+            
+            # First try to get the page directly
+            try:
+                page = wikipedia.page(title)
+            except wikipedia.exceptions.PageError:
+                # If direct fetch fails, try searching for the title
+                console.print(f"[yellow]Page not found directly, searching for: {title}[/yellow]")
+                search_results = wikipedia.search(title, results=3)
+                
+                if not search_results:
+                    console.print(f"[red]No search results found for: {title}[/red]")
+                    return None
+                
+                # Try the first search result
+                console.print(f"[yellow]Trying search result: {search_results[0]}[/yellow]")
+                try:
+                    page = wikipedia.page(search_results[0])
+                except (wikipedia.exceptions.PageError, wikipedia.exceptions.DisambiguationError):
+                    if len(search_results) > 1:
+                        # Try the second search result
+                        console.print(f"[yellow]Trying second search result: {search_results[1]}[/yellow]")
+                        try:
+                            page = wikipedia.page(search_results[1])
+                        except (wikipedia.exceptions.PageError, wikipedia.exceptions.DisambiguationError):
+                            console.print(f"[red]Failed to find article for: {title}[/red]")
+                            return None
+                    else:
+                        console.print(f"[red]Failed to find article for: {title}[/red]")
+                        return None
             
             article_data = {
                 'title': page.title,
                 'url': page.url,
                 'content': page.content,
                 'summary': page.summary,
-                'categories': page.categories[:10],  # Limit categories                'links': page.links[:50],  # Limit links
+                'categories': page.categories[:10],  # Limit categories
+                'links': page.links[:50],  # Limit links
                 'fetch_timestamp': time.time()
             }
             
@@ -145,27 +177,32 @@ class WikipediaIngester:
         try:
             search_results = wikipedia.search(query, results=results)
             console.print(f"[blue]Found {len(search_results)} articles for '{query}'[/blue]")
-            return search_results        except Exception as e:
+            return search_results
+        except Exception as e:
             logger.error(f"Search failed for '{query}': {str(e)}")
             return []
 
 
 def main():
     """Main function for testing the ingestion module."""
-    # Example usage
+    parser = argparse.ArgumentParser(description='Fetch Wikipedia articles for GraphRAG pipeline')
+    parser.add_argument('--topics', type=str, required=True, 
+                       help='Comma-separated list of topics to fetch')
+    parser.add_argument('--max-articles', type=int, default=10,
+                       help='Maximum number of articles to fetch (default: 10)')
+    
+    args = parser.parse_args()
+    
+    # Parse topics from command line
+    topics = [topic.strip() for topic in args.topics.split(',')]
+    
+    # Initialize ingester
     ingester = WikipediaIngester()
     
-    # Test topics
-    test_topics = [
-        "Artificial Intelligence",
-        "Machine Learning",
-        "Natural Language Processing",
-        "Computer Vision",
-        "Deep Learning"
-    ]
+    console.print(f"[bold blue]Fetching articles for topics: {topics}[/bold blue]")
     
     # Fetch articles
-    articles = ingester.fetch_articles(test_topics, max_articles=5)
+    articles = ingester.fetch_articles(topics, max_articles=args.max_articles)
     
     console.print(f"\n[bold green]Ingestion complete![/bold green]")
     console.print(f"Fetched {len(articles)} articles")

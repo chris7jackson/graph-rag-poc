@@ -30,7 +30,8 @@ class GraphBuilder:
         self.output_dir = Path('./data/graphs')
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        # Configuration        self.min_confidence = self.config.get('min_confidence', 0.3)
+        # Configuration
+        self.min_confidence = self.config.get('min_confidence', 0.3)
         self.max_nodes = self.config.get('max_nodes', 1000)
         self.merge_threshold = self.config.get('merge_threshold', 0.85)
         
@@ -59,7 +60,8 @@ class GraphBuilder:
             node_data['count'] += 1
             if doc_id and doc_id not in node_data['sources']:
                 node_data['sources'].append(doc_id)
-            # Update confidence (average)            old_conf = node_data['confidence']
+            # Update confidence (average)
+            old_conf = node_data['confidence']
             new_conf = entity.get('confidence', 1.0)
             node_data['confidence'] = (old_conf * (node_data['count'] - 1) + new_conf) / node_data['count']
     
@@ -86,7 +88,8 @@ class GraphBuilder:
                 self.graph[source_id][target_id]['weight'] += weight
                 self.graph[source_id][target_id]['count'] += 1
             else:
-                # Add new edge                self.graph.add_edge(
+                # Add new edge
+                self.graph.add_edge(
                     source_id,
                     target_id,
                     type=rel_type,
@@ -114,7 +117,8 @@ class GraphBuilder:
             for entity in data['entities']:
                 if entity.get('confidence', 1.0) >= self.min_confidence:
                     self.add_entity(entity, data['doc_id'])
-                        # Add relationships from co-occurrence
+            
+            # Add relationships from co-occurrence
             self._add_cooccurrence_edges(data['entities'], data['doc_id'])
         
         # Prune graph if needed
@@ -157,17 +161,49 @@ class GraphBuilder:
             pickle.dump(self.graph, f)
         console.print(f"[green]Saved graph to {pickle_path}[/green]")
         
-        # Save as GraphML
+        # Save as GraphML (with cleaned data)
         graphml_path = self.output_dir / f"{filename}.graphml"
-        nx.write_graphml(self.graph, graphml_path)
+        cleaned_graph = self._prepare_graph_for_graphml()
+        nx.write_graphml(cleaned_graph, graphml_path)
         console.print(f"[green]Saved graph to {graphml_path}[/green]")
         
         # Save statistics
         self._save_statistics(filename)
     
+    def _prepare_graph_for_graphml(self) -> nx.DiGraph:
+        """Prepare graph for GraphML export by converting unsupported data types."""
+        cleaned_graph = nx.DiGraph()
+        
+        # Copy nodes with cleaned attributes
+        for node, data in self.graph.nodes(data=True):
+            cleaned_data = {}
+            for key, value in data.items():
+                if isinstance(value, list):
+                    cleaned_data[key] = str(value)  # Convert lists to strings
+                elif isinstance(value, (int, float, str, bool)):
+                    cleaned_data[key] = value
+                else:
+                    cleaned_data[key] = str(value)  # Convert other types to strings
+            cleaned_graph.add_node(node, **cleaned_data)
+        
+        # Copy edges with cleaned attributes
+        for source, target, data in self.graph.edges(data=True):
+            cleaned_data = {}
+            for key, value in data.items():
+                if isinstance(value, list):
+                    cleaned_data[key] = str(value)  # Convert lists to strings
+                elif isinstance(value, (int, float, str, bool)):
+                    cleaned_data[key] = value
+                else:
+                    cleaned_data[key] = str(value)  # Convert other types to strings
+            cleaned_graph.add_edge(source, target, **cleaned_data)
+        
+        return cleaned_graph
+    
     def _save_statistics(self, filename: str):
         """Save graph statistics."""
-        stats = {            'nodes': len(self.graph.nodes),
+        stats = {
+            'nodes': len(self.graph.nodes),
             'edges': len(self.graph.edges),
             'density': nx.density(self.graph),
             'avg_degree': sum(dict(self.graph.degree()).values()) / len(self.graph.nodes) if self.graph.nodes else 0,

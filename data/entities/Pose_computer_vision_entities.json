@@ -1,0 +1,163 @@
+{
+  "doc_id": "Pose (computer vision)",
+  "entities": [
+    {
+      "text": "three",
+      "label": "CARDINAL",
+      "start": 145,
+      "end": 150,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "Pose",
+      "label": "PRODUCT",
+      "start": 721,
+      "end": 725,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "2D",
+      "label": "CARDINAL",
+      "start": 1191,
+      "end": 1193,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "Camera",
+      "label": "PERSON",
+      "start": 2675,
+      "end": 2681,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "Homography",
+      "label": "PERSON",
+      "start": 2727,
+      "end": 2737,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "Structure",
+      "label": "PRODUCT",
+      "start": 2775,
+      "end": 2784,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    },
+    {
+      "text": "Trifocal",
+      "label": "ORG",
+      "start": 2818,
+      "end": 2826,
+      "confidence": 1.0,
+      "extractor": "spacy"
+    }
+  ],
+  "relationships": [
+    [
+      "fields",
+      "of",
+      "In"
+    ],
+    [
+      "pose",
+      "In",
+      "represents"
+    ],
+    [
+      "position",
+      "in",
+      "represents"
+    ],
+    [
+      "process",
+      "of",
+      "by"
+    ],
+    [
+      "position",
+      "in",
+      "on"
+    ],
+    [
+      "pose",
+      "of",
+      "determining"
+    ],
+    [
+      "object",
+      "in",
+      "of"
+    ],
+    [
+      "image",
+      "of",
+      "is"
+    ],
+    [
+      "object",
+      "on",
+      "of"
+    ],
+    [
+      "set",
+      "of",
+      "from"
+    ],
+    [
+      "coordinates",
+      "of",
+      "relate"
+    ],
+    [
+      "pose",
+      "of",
+      "determine"
+    ],
+    [
+      "respect",
+      "to",
+      "with"
+    ],
+    [
+      "pose",
+      "of",
+      "have"
+    ],
+    [
+      "projection",
+      "of",
+      "between"
+    ],
+    [
+      "projection",
+      "with",
+      "between"
+    ],
+    [
+      "images",
+      "of",
+      "of"
+    ],
+    [
+      "estimate",
+      "of",
+      "present"
+    ],
+    [
+      "image",
+      "of",
+      "given"
+    ]
+  ],
+  "stats": {
+    "total_entities": 7,
+    "unique_entities": 7,
+    "total_relationships": 19
+  }
+}

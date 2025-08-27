@@ -206,7 +206,8 @@ def main():
     # Process articles
     results = extractor.process_articles('./data/articles')
     
-    # Print statistics    total_entities = sum(r['stats']['total_entities'] for r in results)
+    # Print statistics
+    total_entities = sum(r['stats']['total_entities'] for r in results)
     total_relationships = sum(r['stats']['total_relationships'] for r in results)
     
     console.print("\n[bold]Extraction Statistics:[/bold]")

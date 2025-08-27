@@ -11,7 +11,7 @@ beautifulsoup4==4.12.2
 # NLP & Entity Extraction
 spacy==3.7.2
 gliner==0.2.0  # Check latest version
-transformers==4.36.0
+transformers==4.38.2
 torch==2.1.0
 sentence-transformers==2.2.2
 

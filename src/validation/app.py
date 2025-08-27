@@ -25,11 +25,14 @@ st.set_page_config(
 st.title("🔍 Graph RAG Validation Interface")
 st.markdown("Interactive tool for validating and editing the knowledge graph")
 
+# Define graph directory
+graph_dir = Path('./data/graphs')
+
 # Sidebar for controls
 with st.sidebar:
     st.header("Controls")
     
-    # Load graph    graph_dir = Path('./data/graphs')
+    # Load graph
     if graph_dir.exists():
         graph_files = list(graph_dir.glob('*.pickle'))
         if graph_files:
@@ -86,7 +89,8 @@ if graph:
         st.bar_chart(df_types.set_index('Type'))
         
         # Top entities by degree centrality
-        st.subheader("Top Entities by Connections")        centrality = nx.degree_centrality(graph)
+        st.subheader("Top Entities by Connections")
+        centrality = nx.degree_centrality(graph)
         top_entities = sorted(centrality.items(), key=lambda x: x[1], reverse=True)[:10]
         
         df_top = pd.DataFrame([
@@ -250,7 +254,8 @@ if graph:
                     """)
                 
                 # Save and display
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.html') as tmp:                    net.save_graph(tmp.name)
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.html') as tmp:
+                    net.save_graph(tmp.name)
                     with open(tmp.name, 'r') as f:
                         html_content = f.read()
                     

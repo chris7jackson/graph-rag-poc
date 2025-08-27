@@ -28,7 +28,8 @@ class TestWikipediaIngester:
         assert ingester.language == 'en'
         assert ingester.cache_dir.exists()
     
-    @patch('src.ingestion.wikipedia.wikipedia.page')    def test_fetch_article_success(self, mock_page):
+    @patch('src.ingestion.wikipedia.wikipedia.page')
+    def test_fetch_article_success(self, mock_page):
         """Test successful article fetching."""
         # Mock Wikipedia page
         mock_page_obj = Mock()
